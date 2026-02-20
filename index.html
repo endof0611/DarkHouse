@@ -235,7 +235,7 @@ body{background:var(--darker);color:var(--text);font-family:'Noto Sans KR',sans-
 <!-- ROOFTOP SCREEN -->
 <div class="screen" id="rooftop-screen" style="justify-content:stretch">
   <div class="roof-hud">
-    <div><div class="timer" id="roofTimer">0:40</div><div class="timer-label">헬기 도착까지</div></div>
+    <div><div class="timer" id="roofTimer">1:00</div><div class="timer-label">헬기 도착까지</div></div>
     <div style="text-align:right"><div class="ri-name" id="roofFloorName">1층</div><div class="ri-sub">현재 층</div></div>
   </div>
   <div class="stage-badge">STAGE 4</div>
@@ -351,12 +351,12 @@ function updateTimer(){const m=Math.floor(S.timeLeft/60),s=S.timeLeft%60;documen
 function startTimer(){S.timer=setInterval(()=>{S.timeLeft--;updateTimer();if(S.timeLeft<=10&&S.timeLeft>0){document.getElementById('timerDisplay').classList.add('urgent');if(S.timeLeft%2===0)au.hb();}if(S.timeLeft<=0){clearInterval(S.timer);startInvasion();}},1000);}
 
 // STAGE 1
-function startStage1(){currentStage=1;initState(30,HOUSE1);hideAll();showScreen('intro-screen');au.init();document.getElementById('stageBadge').textContent='STAGE 1';typeNews('인근 교도소에서 <em>흉악범이 탈옥</em>했습니다. 현재 범인은 주택가 부근에서 목격되었으며, 주민 여러분께서는 <em>모든 문과 창문을 잠그고</em> 안전한 장소에 대피하시기 바랍니다.',()=>startLockPhase());}
+function startStage1(){currentStage=1;initState(30,HOUSE1); /* ⏱️ 스테이지1 제한시간: 30초 */hideAll();showScreen('intro-screen');au.init();document.getElementById('stageBadge').textContent='STAGE 1';typeNews('인근 교도소에서 <em>흉악범이 탈옥</em>했습니다. 현재 범인은 주택가 부근에서 목격되었으며, 주민 여러분께서는 <em>모든 문과 창문을 잠그고</em> 안전한 장소에 대피하시기 바랍니다.',()=>startLockPhase());}
 function typeNews(html,cb){const el=document.getElementById('newsText');const tmp=document.createElement('div');tmp.innerHTML=html;const plain=tmp.textContent;el.innerHTML='';let i=0;(function tp(){if(i<plain.length){el.textContent=plain.substring(0,++i);setTimeout(tp,30);}else{el.innerHTML=html;setTimeout(cb,2000);}})();}
 function startLockPhase(){S.phase='game';hideAll();showScreen('game-screen');S.room='hallway';renderRoom();updateTimer();document.getElementById('minimapArea').style.display='';au.amb();startTimer();}
 
 // STAGE 2
-function startStage2(){currentStage=2;initState(20,HOUSE2);hideAll();showScreen('intro-screen');au.init();document.getElementById('stageBadge').textContent='STAGE 2';typeNews('탈옥한 흉악범이 <em>아직 검거되지 않았습니다</em>. 주민 여러분의 각별한 주의가 필요합니다. 외출을 자제하시고 <em>수상한 사람을 발견하면 즉시 신고</em>해 주십시오.',()=>showStoryScene('fridge'));}
+function startStage2(){currentStage=2;initState(20,HOUSE2); /* ⏱️ 스테이지2 제한시간: 20초 */hideAll();showScreen('intro-screen');au.init();document.getElementById('stageBadge').textContent='STAGE 2';typeNews('탈옥한 흉악범이 <em>아직 검거되지 않았습니다</em>. 주민 여러분의 각별한 주의가 필요합니다. 외출을 자제하시고 <em>수상한 사람을 발견하면 즉시 신고</em>해 주십시오.',()=>showStoryScene('fridge'));}
 function showStoryScene(scene){hideAll();showScreen('story-screen');const emoji=document.getElementById('storyEmoji'),text=document.getElementById('storyText'),choices=document.getElementById('storyChoices');choices.innerHTML='';if(scene==='fridge'){emoji.textContent='🧊';text.innerHTML='냉장고를 열어보니... <em>텅 비어있다.</em><br>먹을 것이 하나도 없다.<br>편의점에 가야 할 것 같다.';addChoice('🏪 편의점으로 가자',()=>showStoryScene('outside'));}else if(scene==='outside'){emoji.textContent='🌙';text.innerHTML='밤거리로 나왔다. 어둡고 조용하다.<br>편의점에서 라면과 물을 샀다.<br><br>편의점을 나서는 순간,<br><em>옆집에서 누군가 나온다.</em><br><br><em>흉악범이다!</em>';setTimeout(()=>au.danger(),500);addChoice('🏃 도망친다!',()=>startActionGame('escape'));}}
 function addChoice(t,cb){const b=document.createElement('button');b.className='story-choice';b.innerHTML=t;b.onclick=cb;document.getElementById('storyChoices').appendChild(b);}
 
@@ -364,7 +364,9 @@ function addChoice(t,cb){const b=document.createElement('button');b.className='s
 let actionState={clicks:0,timer:null,timeLeft:0,required:0,mode:''};
 function startActionGame(mode){
   hideAll();showScreen('action-screen');
-  const cfg=mode==='escape'?{time:10,req:50,label:'클릭하여 도망쳐!',emoji:'🏃',tap:'연타!',msg:'미친 듯이 클릭하세요!'}:{time:3,req:5,label:'문을 두드려라!',emoji:'🚪',tap:'두드려!',msg:'옆집 문을 두드리세요!'};
+  const cfg=mode==='escape'
+    ?{time:10,req:50,label:'클릭하여 도망쳐!',emoji:'🏃',tap:'연타!',msg:'미친 듯이 클릭하세요!'} /* ⏱️ 도망 미니게임: 10초, 50클릭 */
+    :{time:3,req:5,label:'문을 두드려라!',emoji:'🚪',tap:'두드려!',msg:'옆집 문을 두드리세요!'}; /* ⏱️ 문두드리기: 3초, 5클릭 */
   actionState={clicks:0,timer:null,timeLeft:cfg.time,required:cfg.req,mode};
   document.getElementById('actionTimer').textContent=cfg.time;document.getElementById('actionCount').textContent=`0 / ${cfg.req}`;
   document.getElementById('actionLabel').textContent=cfg.label;document.getElementById('actionBar').style.width='0%';document.getElementById('actionBar').classList.remove('full');
@@ -399,7 +401,7 @@ function showStoryScene3(){
 function startMaze(){
   // Generate maze: 12 rooms (4x3 grid), each room has doors to adjacent rooms
   // One random room (not 0) is exit, killer starts far from player
-  MZ={pos:0,exit:-1,killer:-1,visited:new Set([0]),timer:null,timeLeft:30,doors:[],killerTimer:null,phase:'play',wrongPenalty:false};
+  MZ={pos:0,exit:-1,killer:-1,visited:new Set([0]),timer:null,timeLeft:30, /* ⏱️ 스테이지3 제한시간: 30초 */doors:[],killerTimer:null,phase:'play',wrongPenalty:false};
 
   // Build adjacency (4 cols x 3 rows)
   // rooms numbered 0-11: row=floor(i/4), col=i%4
@@ -433,7 +435,7 @@ function startMaze(){
   },1000);
 
   // Killer moves every 4 seconds toward player
-  MZ.killerTimer=setInterval(()=>{
+  MZ.killerTimer=setInterval(()=>{ /* ⏱️ 흉악범 이동 간격: 4초 (낮을수록 어려움) */
     if(MZ.phase!=='play')return;
     moveKiller();
     if(MZ.killer===MZ.pos){clearInterval(MZ.timer);clearInterval(MZ.killerTimer);au.stopAmb();MZ.phase='done';showFailResult('흉악범에게 발각되었습니다...');}
@@ -513,7 +515,7 @@ function mazeDoorClick(target,isCorrect){
   if(MZ.phase!=='play'||MZ.wrongPenalty)return;
   if(!isCorrect){
     // Wrong door: 2 second penalty
-    au.wrong();MZ.wrongPenalty=true;MZ.timeLeft=Math.max(0,MZ.timeLeft-2);updateMazeTimer();
+    au.wrong();MZ.wrongPenalty=true;MZ.timeLeft=Math.max(0,MZ.timeLeft-2);updateMazeTimer(); /* ⏱️ 오답 문 패널티: -2초 */
     const rv=document.getElementById('mazeRoomView');rv.classList.add('maze-wrong-flash');
     showMazeMsg('막다른 길! (-2초)');
     setTimeout(()=>{rv.classList.remove('maze-wrong-flash');MZ.wrongPenalty=false;},500);
@@ -564,7 +566,7 @@ function showStoryScene4(){
 }
 
 function startRooftop(){
-  RF={floor:1,maxFloor:5,phase:'climb',timer:null,timeLeft:40,climbClicks:0,climbNeeded:20,
+  RF={floor:1,maxFloor:5,phase:'climb',timer:null,timeLeft:60, /* ⏱️ 스테이지4 제한시간: 60초 */climbClicks:0,climbNeeded:20,
     obstacleActive:false,correctSide:'',code:generateCode(),input:[],attempt:0};
   RF.codeHints=generateHints(RF.code);
   hideAll();showScreen('rooftop-screen');au.amb();
@@ -591,7 +593,7 @@ function generateHints(code){
 function startRoofTimer(){
   RF.timer=setInterval(()=>{
     RF.timeLeft--;updateRoofTimer();
-    const danger=Math.max(0,1-RF.timeLeft/40);
+    const danger=Math.max(0,1-RF.timeLeft/60);
     document.getElementById('roofDanger').style.boxShadow=`inset 0 0 ${50+danger*150}px rgba(139,0,0,${0.05+danger*0.5})`;
     if(RF.timeLeft<=10&&RF.timeLeft>0){document.getElementById('roofTimer').classList.add('urgent');if(RF.timeLeft%2===0)au.hb();}
     if(RF.timeLeft<=0){clearInterval(RF.timer);au.stopAmb();RF.phase='done';showFailResult('시간 초과... 흉악범에게 잡혔습니다.');}
@@ -618,7 +620,7 @@ function renderFloor(){
 
 function startClimbPhase(){
   RF.phase='climb';RF.climbClicks=0;
-  RF.climbNeeded=15+RF.floor*5;// harder each floor
+  RF.climbNeeded=15+RF.floor*5;// ⏱️ 층별 필요 클릭수: 1층=20, 2층=25, 3층=30, 4층=35
   document.getElementById('obstacleArea').innerHTML='<div style="text-align:center;color:var(--text-dim);font-size:clamp(0.7rem,1.8vw,0.85rem);padding-top:20px;">계단 위를 클릭하여 올라가세요!</div>';
   const ca=document.getElementById('roofClimbArea');ca.style.display='block';
   document.getElementById('roofClimbBar').style.width='0%';
@@ -683,7 +685,7 @@ function startObstacle(){
   // Auto-fail if no response in 2 seconds
   RF._obstacleTimeout=setTimeout(()=>{
     if(RF.phase==='obstacle'){dodge('timeout');}
-  },2000);
+  },2000); /* ⏱️ 장애물 회피 제한시간: 2초 */
 }
 
 function dodge(side){
@@ -700,7 +702,7 @@ function dodge(side){
       RF.floor++;renderFloor();startClimbPhase();
     },800);
   }else{
-    au.wrong();RF.timeLeft=Math.max(0,RF.timeLeft-3);updateRoofTimer();
+    au.wrong();RF.timeLeft=Math.max(0,RF.timeLeft-3);updateRoofTimer(); /* ⏱️ 장애물 피격 패널티: -3초 */
     const oa=document.getElementById('obstacleArea');
     oa.innerHTML=`<div style="text-align:center;color:var(--warning);font-size:clamp(0.9rem,2.2vw,1.1rem);padding-top:30px;">💥 맞았다! (-3초)</div>`;
     if(side==='timeout')oa.innerHTML=`<div style="text-align:center;color:var(--warning);font-size:clamp(0.9rem,2.2vw,1.1rem);padding-top:30px;">💥 너무 늦었다! (-3초)</div>`;
@@ -743,7 +745,7 @@ function keypadSubmit(){
       showResult(true,'헬기를 타고 탈출했습니다! 흉악범은 경찰에 체포되었습니다.',false);
     },1500);
   }else{
-    RF.attempt++;RF.input=[];RF.timeLeft=Math.max(0,RF.timeLeft-3);updateRoofTimer();
+    RF.attempt++;RF.input=[];RF.timeLeft=Math.max(0,RF.timeLeft-3);updateRoofTimer(); /* ⏱️ 비밀번호 오답 패널티: -3초 */
     au.wrong();
     document.getElementById('keypadDisplay').textContent='✗✗✗✗';
     document.getElementById('keypadDisplay').style.color='var(--warning)';
@@ -762,7 +764,7 @@ function showResult(win,msg,showMap){
     statsEl.innerHTML=`<div class="stat-item"><div class="stat-value" style="color:var(--safe)">${MZ.visited.size}/12</div><div class="stat-label">탐색한 방</div></div><div class="stat-item"><div class="stat-value">${30-MZ.timeLeft}초</div><div class="stat-label">소요 시간</div></div>`;
     statsEl.style.display='flex';mapC.style.display='none';
   }else if(currentStage===4&&win){
-    statsEl.innerHTML=`<div class="stat-item"><div class="stat-value" style="color:var(--safe)">5F</div><div class="stat-label">도달 층</div></div><div class="stat-item"><div class="stat-value">${40-RF.timeLeft}초</div><div class="stat-label">소요 시간</div></div><div class="stat-item"><div class="stat-value">${RF.attempt}</div><div class="stat-label">오답 횟수</div></div>`;
+    statsEl.innerHTML=`<div class="stat-item"><div class="stat-value" style="color:var(--safe)">5F</div><div class="stat-label">도달 층</div></div><div class="stat-item"><div class="stat-value">${60-RF.timeLeft}초</div><div class="stat-label">소요 시간</div></div><div class="stat-item"><div class="stat-value">${RF.attempt}</div><div class="stat-label">오답 횟수</div></div>`;
     statsEl.style.display='flex';mapC.style.display='none';
   }else{statsEl.style.display='none';mapC.style.display='none';}
   const nextBtn=document.getElementById('nextStageBtn'),retryBtn=document.getElementById('retryBtn');
